@@ -31,12 +31,16 @@ def load_music():
 
     songlist.selection_set(0)
     current_song = songs[songlist.curselection()[0]]
+    play_music()
 
 def play_music():
     global current_song, paused
+
+    current_song = songs[songlist.curselection()[0]]
     if not paused:
         pygame.mixer.music.load(os.path.join(root.directory, current_song))
         pygame.mixer.music.play()
+        root.after(1000, check_song_end)
     else:
         pygame.mixer.music.unpause()
         paused = False
@@ -71,18 +75,26 @@ def prev_music():
 def check_song_end():
     if not pygame.mixer.music.get_busy():
         next_music()
-    root.after(1000, check_song_end)
+    else:
+        root.after(1000, check_song_end)
 
-root.after(1000, check_song_end)
+def on_song_double_click(event):
+    global current_song
+    try:
+        current_song = songs[songlist.curselection()[0]]  # Get the clicked song
+        play_music()  # Play the selected song
+    except:
+        pass
 
 organise_menu = Menu(menubar, tearoff=False)
 organise_menu.add_command(label='Select Folder', command=load_music)
 menubar.add_cascade(label='Organise', menu=organise_menu)
 
-songlist = Listbox(root, bg="black", fg="white", width=100, height=15)
+songlist = Listbox(root, bg="black", fg="green", width=100, height=15)
+songlist.bind("<Double-1>", on_song_double_click)
 songlist.pack()
 
-play_btn_image = PhotoImage(file='play.png').subsample(16, 16)  # Scale down by a factor of 16
+play_btn_image = PhotoImage(file='play.png').subsample(16, 16)
 pause_btn_image = PhotoImage(file='pause.png').subsample(16, 16)
 next_btn_image = PhotoImage(file='next.png').subsample(16, 16)
 prev_btn_image = PhotoImage(file='prev.png').subsample(16, 16)
