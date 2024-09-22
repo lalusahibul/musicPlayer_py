@@ -29,62 +29,69 @@ def load_music():
     for song in songs:
         songlist.insert("end", song)
 
-    songlist.selection_set(0)
-    current_song = songs[songlist.curselection()[0]]
-    play_music()
+    if songs:
+        songlist.selection_set(0)
+        current_song = songs[songlist.curselection()[0]]
+        play_music()
 
 def play_music():
     global current_song, paused
 
-    current_song = songs[songlist.curselection()[0]]
-    if not paused:
-        pygame.mixer.music.load(os.path.join(root.directory, current_song))
-        pygame.mixer.music.play()
-        root.after(1000, check_song_end)
-    else:
-        pygame.mixer.music.unpause()
-        paused = False
-
+    if songlist.curselection():
+        current_song = songs[songlist.curselection()[0]]
+        
+        if not paused:
+            pygame.mixer.music.load(os.path.join(root.directory, current_song))
+            pygame.mixer.music.play()
+            root.after(1000,check_song_end)
+            paused = False
+        else:
+            pygame.mixer.music.unpause()
+            paused = False
 
 def pause_music():
     global paused
-    pygame.mixer.music.pause()
-    paused = True
+    if not paused:
+        pygame.mixer.music.pause()
+        paused = True 
 
 def next_music():
     global current_song, paused
     try:
         songlist.selection_clear(0, END)
-        songlist.selection_set(songs.index(current_song)+1)
+        next_index = (songs.index(current_song) + 1) % len(songs)
+        songlist.selection_set(next_index)
         current_song = songs[songlist.curselection()[0]]
         play_music()
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
 def prev_music():
     global current_song, paused
 
     try:
         songlist.selection_clear(0, END)
-        songlist.selection_set(songs.index(current_song)-1)
+        prev_index = (songs.index(current_song) - 1) % len(songs)
+        songlist.selection_set(prev_index)
         current_song = songs[songlist.curselection()[0]]
         play_music()
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
 def check_song_end():
     if not pygame.mixer.music.get_busy():
-        next_music()
+        if len(songs) > 1:
+            next_music()
     else:
         root.after(1000, check_song_end)
 
 def on_song_double_click(event):
     global current_song
     try:
-        current_song = songs[songlist.curselection()[0]]  # Get the clicked song
-        play_music()  # Play the selected song
-    except:
-        pass
+        current_song = songs[songlist.curselection()[0]]
+        play_music()
+    except Exception as e:
+        print(e)
 
 organise_menu = Menu(menubar, tearoff=False)
 organise_menu.add_command(label='Select Folder', command=load_music)
