@@ -68,11 +68,18 @@ def prev_music():
     except:
         pass
 
+def check_song_end():
+    if not pygame.mixer.music.get_busy():
+        next_music()
+    root.after(1000, check_song_end)
+
+root.after(1000, check_song_end)
+
 organise_menu = Menu(menubar, tearoff=False)
 organise_menu.add_command(label='Select Folder', command=load_music)
-menubar.add_cascade(label='Open Songs', menu=organise_menu)
+menubar.add_cascade(label='Organise', menu=organise_menu)
 
-songlist = Listbox(root, bg="black", fg="green", width=100, height=15)
+songlist = Listbox(root, bg="black", fg="white", width=100, height=15)
 songlist.pack()
 
 play_btn_image = PhotoImage(file='play.png').subsample(16, 16)  # Scale down by a factor of 16
